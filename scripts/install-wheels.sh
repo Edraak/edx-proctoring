@@ -11,10 +11,10 @@ sudo pip install wheel
 
 WHEELS_ARGS=""  # Get wheels from the internet by default
 
-#if [ "$(expr substr $(uname -s) 1 5)" == "Linux" ]; then
-#  # Use local wheels for faster TravisCI and Vagrant installs.
-#  WHEELS_ARGS="--no-index --find-links=scripts/data/wheelhouse"
-#fi
+if [ "$TRAVIS"="true" ]; then
+  # Use local wheels for faster TravisCI and Vagrant installs.
+  WHEELS_ARGS="--no-index --find-links=scripts/data/wheelhouse"
+fi
 
 # Ensure that numpy is installed first; otherwise scipy won't be able to install
 pip install --use-wheel --upgrade $WHEELS_ARGS numpy
