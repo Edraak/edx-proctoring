@@ -19,10 +19,6 @@ install:
     - "pip install coveralls"
 
 script:
-    - coverage run ./manage.py test edx_proctoring
-    - coverage report -m
-    - gulp test
-    - pep8 edx_proctoring
-    - pylint edx_proctoring --report=no
+    - make test
 
 after_success: coveralls

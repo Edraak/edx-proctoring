@@ -32,8 +32,13 @@ install-coveralls:
 
 install-dev: install-python install-test install-coveralls
 
-test:
+test-py:
 	./scripts/run-tests.sh
+
+test-js:
+	gulp test
+
+test: test-py test-js
 
 i18n-push:
 	./scripts/i18n-push.sh
