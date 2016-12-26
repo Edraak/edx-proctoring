@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-21 17:26+0200\n"
+"POT-Creation-Date: 2016-12-26 11:37+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Salah Alomari <salomari@qrf.org>, 2016\n"
 "Language-Team: Arabic (https://www.transifex.com/edraak/teams/27178/ar/)\n"
@@ -630,6 +630,17 @@ msgstr ""
 "      <i class=\"fa fa-arrow-circle-left\"></i>\n"
 "      "
 
+#: edx_proctoring/templates/timed_exam/entrance.html:63
+msgid ""
+"There has been a problem starting your exam.\\n\\n Possible reasons are that"
+" your account has not been fully activated, you are experiencing a network "
+"connection problem, or there has been a service disruption.Please check "
+"these potential problems and try again."
+msgstr ""
+"حدث مشكلة أثناء تشغيل إمتحانك.\\n\\n الأسباب المحتملة أنه لم يتم تفعيل "
+"حسابك، أو هنالك مشكلة بالشبكة، أو انقطاع الخدمة. الرجاء التأكد من هذه "
+"الأسباب المحتملة و اعادة المحاولة مرة أخرى."
+
 #: edx_proctoring/templates/timed_exam/footer.html:3
 msgid "Can I request additional time to complete my exam?"
 msgstr "هل يمكنني طلب وقت إضافي لأتمكن من إنهاء إمتحاني؟"
@@ -719,35 +730,31 @@ msgstr ""
 "        بعد انقضاء مدة الاستحقاق يمكنك مراجعة أجوبتك، لكن لن يكون بإستطاعتك إجراء أي تعديل.\n"
 "      "
 
-#: edx_proctoring/utils.py:70
+#: edx_proctoring/utils.py:67
 #, python-brace-format
 msgid "{num_of_hours} hour"
-msgstr ""
+msgid_plural "{num_of_hours} hours"
+msgstr[0] "{num_of_hours} ساعة"
+msgstr[1] "{num_of_hours} ساعة"
+msgstr[2] "{num_of_hours} ساعة"
+msgstr[3] "{num_of_hours} ساعات"
+msgstr[4] "{num_of_hours} ساعات"
+msgstr[5] "{num_of_hours} ساعات"
 
-#: edx_proctoring/utils.py:73
-#, python-brace-format
-msgid "{num_of_hours} hours"
-msgstr ""
+#: edx_proctoring/utils.py:70
+msgid " and "
+msgstr " و "
 
-#: edx_proctoring/utils.py:81 edx_proctoring/utils.py:91
-#, python-brace-format
-msgid "{num_of_minutes} minutes"
-msgstr ""
-
-#: edx_proctoring/utils.py:84
-#, python-brace-format
-msgid " and {num_of_minutes} minute"
-msgstr ""
-
-#: edx_proctoring/utils.py:86
+#: edx_proctoring/utils.py:71
 #, python-brace-format
 msgid "{num_of_minutes} minute"
-msgstr ""
-
-#: edx_proctoring/utils.py:89
-#, python-brace-format
-msgid " and {num_of_minutes} minutes"
-msgstr ""
+msgid_plural "{num_of_minutes} minutes"
+msgstr[0] "{num_of_minutes} دقيقة"
+msgstr[1] "{num_of_minutes} دقيقة"
+msgstr[2] "{num_of_minutes} دقيقة"
+msgstr[3] "{num_of_minutes} دقائق"
+msgstr[4] "{num_of_minutes} دقيقة"
+msgstr[5] "{num_of_minutes} دقائق"
 
 #: edx_proctoring/views.py:92
 msgid "could not determine the course_id"

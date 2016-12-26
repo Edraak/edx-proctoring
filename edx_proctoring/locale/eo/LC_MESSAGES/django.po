@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-21 17:26+0200\n"
+"POT-Creation-Date: 2016-12-26 11:37+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -831,6 +831,22 @@ msgstr ""
 "      <i class=\"fa fa-arrow-circle-right\"></i>\n"
 "       Ⱡ'σяєм ιρѕυм ∂σłσя ѕιт αмєт, ¢σηѕє¢тєтυя α#"
 
+#: edx_proctoring/templates/timed_exam/entrance.html
+msgid ""
+"There has been a problem starting your exam.\\n\\n Possible reasons are that"
+" your account has not been fully activated, you are experiencing a network "
+"connection problem, or there has been a service disruption.Please check "
+"these potential problems and try again."
+msgstr ""
+"Théré häs ßéén ä prößlém stärtïng ýöür éxäm.\\n\\n Pössïßlé réäsöns äré thät"
+" ýöür äççöünt häs nöt ßéén füllý äçtïvätéd, ýöü äré éxpérïénçïng ä nétwörk "
+"çönnéçtïön prößlém, ör théré häs ßéén ä sérvïçé dïsrüptïön.Pléäsé çhéçk "
+"thésé pöténtïäl prößléms änd trý ägäïn. Ⱡ'σяєм ιρѕυм ∂σłσя ѕιт αмєт, "
+"¢σηѕє¢тєтυя α∂ιριѕι¢ιηg єłιт, ѕє∂ ∂σ єιυѕмσ∂ тємρσя ιη¢ι∂ι∂υηт υт łαвσяє єт "
+"∂σłσяє мαgηα αłιqυα. υт єηιм α∂ мιηιм νєηιαм, qυιѕ ησѕтяυ∂ єχєя¢ιтαтιση "
+"υłłαм¢σ łαвσяιѕ ηιѕι υт αłιqυιρ єχ єα ¢σммσ∂σ ¢σηѕєqυαт. ∂υιѕ αυтє ιяυяє "
+"∂σłσя#"
+
 #: edx_proctoring/templates/timed_exam/footer.html
 msgid "Can I request additional time to complete my exam?"
 msgstr ""
@@ -925,32 +941,20 @@ msgstr ""
 #: edx_proctoring/utils.py
 #, python-brace-format
 msgid "{num_of_hours} hour"
-msgstr "{num_of_hours} höür Ⱡ'σяєм ιρѕυм ∂#"
+msgid_plural "{num_of_hours} hours"
+msgstr[0] "{num_of_hours} höür Ⱡ'σяєм ιρѕυм ∂#"
+msgstr[1] "{num_of_hours} höürs Ⱡ'σяєм ιρѕυм ∂σł#"
 
 #: edx_proctoring/utils.py
-#, python-brace-format
-msgid "{num_of_hours} hours"
-msgstr "{num_of_hours} höürs Ⱡ'σяєм ιρѕυм ∂σł#"
-
-#: edx_proctoring/utils.py edx_proctoring/utils.py
-#, python-brace-format
-msgid "{num_of_minutes} minutes"
-msgstr "{num_of_minutes} mïnütés Ⱡ'σяєм ιρѕυм ∂σłσя #"
-
-#: edx_proctoring/utils.py
-#, python-brace-format
-msgid " and {num_of_minutes} minute"
-msgstr " änd {num_of_minutes} mïnüté Ⱡ'σяєм ιρѕυм ∂σłσя ѕιт α#"
+msgid " and "
+msgstr " änd  Ⱡ'σяєм ιρѕ#"
 
 #: edx_proctoring/utils.py
 #, python-brace-format
 msgid "{num_of_minutes} minute"
-msgstr "{num_of_minutes} mïnüté Ⱡ'σяєм ιρѕυм ∂σłσ#"
-
-#: edx_proctoring/utils.py
-#, python-brace-format
-msgid " and {num_of_minutes} minutes"
-msgstr " änd {num_of_minutes} mïnütés Ⱡ'σяєм ιρѕυм ∂σłσя ѕιт αм#"
+msgid_plural "{num_of_minutes} minutes"
+msgstr[0] "{num_of_minutes} mïnüté Ⱡ'σяєм ιρѕυм ∂σłσ#"
+msgstr[1] "{num_of_minutes} mïnütés Ⱡ'σяєм ιρѕυм ∂σłσя #"
 
 #: edx_proctoring/views.py
 msgid "could not determine the course_id"
