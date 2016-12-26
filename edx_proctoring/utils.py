@@ -6,7 +6,7 @@ import pytz
 import logging
 from datetime import datetime, timedelta
 
-from django.utils.translation import ugettext as _, pgettext, ungettext
+from django.utils.translation import ugettext as _, ungettext
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -63,12 +63,18 @@ def humanized_time(time_in_minutes):
     minutes = time_in_minutes % 60
     display = ""
 
-    if hours > 0:
-        display+=ungettext("{num_of_hours} hour", "{num_of_hours} hours", hours).format(num_of_hours=hours)
-    if minutes > 0:
+    if hours < 0:
+        return "error"
+    elif hours > 0:
+        display += ungettext("{num_of_hours} hour", "{num_of_hours} hours", hours)\
+            .format(num_of_hours=hours)
+
+    if display == "" or minutes > 0:
         if display != '':
-            display+=_(" and ")
-        display+=ungettext("{num_of_minutes} minute", "{num_of_minutes} minutes", minutes).format(num_of_minutes=minutes)
+            display += _(" and ")
+        display += ungettext("{num_of_minutes} minute", "{num_of_minutes} minutes", minutes)\
+            .format(num_of_minutes=minutes)
+
     return display
 
 
