@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-26 11:37+0200\n"
+"POT-Creation-Date: 2017-01-02 14:12+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -664,8 +664,11 @@ msgstr ""
 msgid ""
 "\n"
 "      I am ready to start this timed exam.\n"
-"      <i class=\"fa fa-arrow-circle-right\"></i>\n"
 "      "
+msgstr ""
+
+#: edx_proctoring/templates/timed_exam/entrance.html:24
+msgid "fa-arrow-circle-right"
 msgstr ""
 
 #: edx_proctoring/templates/timed_exam/entrance.html:63
@@ -745,18 +748,18 @@ msgid ""
 "      "
 msgstr ""
 
-#: edx_proctoring/utils.py:67
+#: edx_proctoring/utils.py:69
 #, python-brace-format
 msgid "{num_of_hours} hour"
 msgid_plural "{num_of_hours} hours"
 msgstr[0] ""
 msgstr[1] ""
 
-#: edx_proctoring/utils.py:70
+#: edx_proctoring/utils.py:74
 msgid " and "
 msgstr ""
 
-#: edx_proctoring/utils.py:71
+#: edx_proctoring/utils.py:75
 #, python-brace-format
 msgid "{num_of_minutes} minute"
 msgid_plural "{num_of_minutes} minutes"

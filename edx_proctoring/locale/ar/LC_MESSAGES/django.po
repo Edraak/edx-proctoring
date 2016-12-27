@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-26 11:37+0200\n"
+"POT-Creation-Date: 2016-12-26 15:22+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Salah Alomari <salomari@qrf.org>, 2016\n"
 "Language-Team: Arabic (https://www.transifex.com/edraak/teams/27178/ar/)\n"
@@ -77,7 +77,7 @@ msgstr ""
 
 #: edx_proctoring/api.py:1189
 msgid "Timed Exam"
-msgstr ""
+msgstr "امتحان محدود بوقت"
 
 #: edx_proctoring/models.py:167
 msgid "pending"
@@ -622,13 +622,15 @@ msgstr "لإنهاء اﻹمتحان و تسليمه."
 msgid ""
 "\n"
 "      I am ready to start this timed exam.\n"
-"      <i class=\"fa fa-arrow-circle-right\"></i>\n"
 "      "
 msgstr ""
 "\n"
-"      أنا مستعد لبدء الإمتحان.\n"
-"      <i class=\"fa fa-arrow-circle-left\"></i>\n"
+"     أنا مستعد للبدء بالإمتحان.\n"
 "      "
+
+#: edx_proctoring/templates/timed_exam/entrance.html:24
+msgid "fa-arrow-circle-right"
+msgstr "fa-arrow-circle-left"
 
 #: edx_proctoring/templates/timed_exam/entrance.html:63
 msgid ""
@@ -717,7 +719,7 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"      تقييم امتحانك متوفر على الفور على صفحة  <a href=\"%(progress_page_url)s\">التقدم</a>.\n"
+"      تقييم امتحانك متوفر على الفور على صفحة  <a href=\"%(progress_page_url)s\">العلامات</a>.\n"
 "    "
 
 #: edx_proctoring/templates/timed_exam/submitted.html:14
@@ -779,4 +781,4 @@ msgstr ""
 
 #: edx_proctoring/views.py:562
 msgid "timed"
-msgstr ""
+msgstr "محدود بوقت"

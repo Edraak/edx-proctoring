@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-26 11:38+0200\n"
+"POT-Creation-Date: 2016-12-26 15:22+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Salah Alomari <salomari@qrf.org>, 2016\n"
 "Language-Team: Arabic (https://www.transifex.com/edraak/teams/27178/ar/)\n"
@@ -60,7 +60,7 @@ msgstr ""
 
 #: edx_proctoring/static/proctoring/js/views/proctored_exam_attempt_view.js:16
 msgid "Timed out"
-msgstr ""
+msgstr "نفذ الوقت"
 
 #: edx_proctoring/static/proctoring/js/views/proctored_exam_attempt_view.js:17
 msgid "Submitted"
@@ -92,7 +92,7 @@ msgstr ""
 
 #: edx_proctoring/static/proctoring/js/views/proctored_exam_attempt_view.js:165
 msgid "Timed"
-msgstr ""
+msgstr "موقوت"
 
 #: edx_proctoring/static/proctoring/js/views/proctored_exam_attempt_view.js:187
 msgid "Are you sure you want to remove this student's exam attempt?"
