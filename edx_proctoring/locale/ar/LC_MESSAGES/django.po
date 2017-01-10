@@ -8,9 +8,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-12-26 15:22+0200\n"
+"POT-Creation-Date: 2017-01-04 10:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: Salah Alomari <salomari@qrf.org>, 2016\n"
+"Last-Translator: Omar Al-Ithawi <oithawi@qrf.org>, 2017\n"
 "Language-Team: Arabic (https://www.transifex.com/edraak/teams/27178/ar/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -20,19 +20,19 @@ msgstr ""
 
 #: edx_proctoring/admin.py:82
 msgid "internally reviewed"
-msgstr ""
+msgstr "تمت مراجعته داخليا"
 
 #: edx_proctoring/admin.py:91
 msgid "All Unreviewed"
-msgstr ""
+msgstr "كل ما هو غير مراجع"
 
 #: edx_proctoring/admin.py:92
 msgid "All Unreviewed Failures"
-msgstr ""
+msgstr "جميع الأعطال الغير المراجعة"
 
 #: edx_proctoring/api.py:776
 msgid "your course"
-msgstr ""
+msgstr "مساقك"
 
 #: edx_proctoring/api.py:824
 #, python-brace-format
@@ -77,7 +77,7 @@ msgstr ""
 
 #: edx_proctoring/api.py:1189
 msgid "Timed Exam"
-msgstr "امتحان محدود بوقت"
+msgstr "اختبار محدود بوقت"
 
 #: edx_proctoring/models.py:167
 msgid "pending"
@@ -109,6 +109,12 @@ msgid ""
 "contact %(platform)s support at %(contact_email)s.\n"
 "\n"
 msgstr ""
+"\n"
+"\n"
+"This email is to let you know that the status of your proctoring session review for %(exam_name)s in\n"
+"<a href=\"%(course_url)s\">%(course_name)s </a> is %(status)s. If you have any questions about proctoring,\n"
+"contact %(platform)s support at %(contact_email)s.\n"
+"\n"
 
 #: edx_proctoring/templates/practice_exam/entrance.html:4
 msgid ""
@@ -160,7 +166,7 @@ msgstr ""
 
 #: edx_proctoring/templates/practice_exam/error.html:25
 msgid "Try this practice exam again"
-msgstr ""
+msgstr "جرب هذا الامتحان التدريبي مرة أخرى"
 
 #: edx_proctoring/templates/practice_exam/submitted.html:4
 msgid ""
@@ -243,6 +249,9 @@ msgid ""
 "        I am not interested in academic credit.\n"
 "      "
 msgstr ""
+"\n"
+"        I am not interested in academic credit.\n"
+"      "
 
 #: edx_proctoring/templates/proctored_exam/error.html:4
 msgid ""
@@ -257,6 +266,9 @@ msgid ""
 "      Your proctoring session results: <b class=\"failure\"> Unsatisfactory </b>\n"
 "    "
 msgstr ""
+"\n"
+"      Your proctoring session results: <b class=\"failure\"> Unsatisfactory </b>\n"
+"    "
 
 #: edx_proctoring/templates/proctored_exam/error.html:16
 msgid ""
@@ -265,6 +277,10 @@ msgid ""
 "      You will not be eligible to use this course for academic credit, even if you achieve a passing grade.\n"
 "    "
 msgstr ""
+"\n"
+"      Your proctoring session ended before you completed this exam, so your proctoring results are incomplete.\n"
+"      You will not be eligible to use this course for academic credit, even if you achieve a passing grade.\n"
+"    "
 
 #: edx_proctoring/templates/proctored_exam/error.html:23
 #: edx_proctoring/templates/proctored_exam/expired.html:15
@@ -277,6 +293,9 @@ msgid ""
 "      View your credit eligibility status on your <a href=\"%(progress_page_url)s\">Progress</a> page.\n"
 "    "
 msgstr ""
+"\n"
+"      View your credit eligibility status on your <a href=\"%(progress_page_url)s\">Progress</a> page.\n"
+"    "
 
 #: edx_proctoring/templates/proctored_exam/error.html:30
 #: edx_proctoring/templates/proctored_exam/rejected.html:24
@@ -285,6 +304,9 @@ msgid ""
 "      If you have concerns about your proctoring session results, contact your course team.\n"
 "    "
 msgstr ""
+"\n"
+"      If you have concerns about your proctoring session results, contact your course team.\n"
+"    "
 
 #: edx_proctoring/templates/proctored_exam/expired.html:4
 #: edx_proctoring/templates/timed_exam/expired.html:4
@@ -294,7 +316,7 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"      لقد انقضى تاريخ الاستحقاق لهذا الإمتحان\n"
+"      مضى تاريخ تقديم الاختبار\n"
 "    "
 
 #: edx_proctoring/templates/proctored_exam/expired.html:9
@@ -305,7 +327,7 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"      بما أن تاريخ استحقاق هذا الإمتحان قد انقضى، لم يعد بمقدورك تقديمه.\n"
+"      لم يعد بمقدورك تقديم الاختبار فقد مضى تاريخ التقديم\n"
 "    "
 
 #: edx_proctoring/templates/proctored_exam/failed-prerequisites.html:9
@@ -315,6 +337,9 @@ msgid ""
 "    You did not satisfy the requirements for taking this exam with proctoring, and are not eligible for credit. See your <a href=\"%(progress_page_url)s\">Progress</a> page for a list of requirements and your status for each.\n"
 "    "
 msgstr ""
+"\n"
+"    You did not satisfy the requirements for taking this exam with proctoring, and are not eligible for credit. See your <a href=\"%(progress_page_url)s\">Progress</a> page for a list of requirements and your status for each.\n"
+"    "
 
 #: edx_proctoring/templates/proctored_exam/failed-prerequisites.html:14
 msgid ""
@@ -322,6 +347,9 @@ msgid ""
 "    You did not satisfy the following prerequisites:\n"
 "    "
 msgstr ""
+"\n"
+"    You did not satisfy the following prerequisites:\n"
+"    "
 
 #: edx_proctoring/templates/proctored_exam/failed-prerequisites.html:30
 msgid ""
@@ -329,6 +357,9 @@ msgid ""
 "    Due to unsatisfied prerequisites, you can only take this exam without proctoring.\n"
 "    "
 msgstr ""
+"\n"
+"    Due to unsatisfied prerequisites, you can only take this exam without proctoring.\n"
+"    "
 
 #: edx_proctoring/templates/proctored_exam/failed-prerequisites.html:41
 msgid ""
@@ -336,6 +367,9 @@ msgid ""
 "        I understand that I am not eligible for academic credit.\n"
 "      "
 msgstr ""
+"\n"
+"        I understand that I am not eligible for academic credit.\n"
+"      "
 
 #: edx_proctoring/templates/proctored_exam/failed-prerequisites.html:47
 #, python-format
@@ -344,6 +378,9 @@ msgid ""
 "      If you have questions about the status of your requirements for course credit, contact %(platform_name)s Support.\n"
 "    "
 msgstr ""
+"\n"
+"      If you have questions about the status of your requirements for course credit, contact %(platform_name)s Support.\n"
+"    "
 
 #: edx_proctoring/templates/proctored_exam/footer.html:5
 msgid ""
@@ -351,6 +388,9 @@ msgid ""
 "        About Proctored Exams\n"
 "        "
 msgstr ""
+"\n"
+"        About Proctored Exams\n"
+"        "
 
 #: edx_proctoring/templates/proctored_exam/instructions.html:6
 msgid ""
@@ -358,6 +398,9 @@ msgid ""
 "      Follow these steps to set up and start your proctored exam.\n"
 "    "
 msgstr ""
+"\n"
+"      Follow these steps to set up and start your proctored exam.\n"
+"    "
 
 #: edx_proctoring/templates/proctored_exam/instructions.html:11
 msgid ""
@@ -365,6 +408,9 @@ msgid ""
 "        1. Copy this unique exam code. You will be prompted to paste this code later before you start the exam.\n"
 "      "
 msgstr ""
+"\n"
+"        1. Copy this unique exam code. You will be prompted to paste this code later before you start the exam.\n"
+"      "
 
 #: edx_proctoring/templates/proctored_exam/instructions.html:19
 msgid ""
@@ -372,6 +418,9 @@ msgid ""
 "        Select the exam code, then copy it using Command+C (Mac) or Control+C (Windows).\n"
 "      "
 msgstr ""
+"\n"
+"        Select the exam code, then copy it using Command+C (Mac) or Control+C (Windows).\n"
+"      "
 
 #: edx_proctoring/templates/proctored_exam/instructions.html:24
 msgid ""
@@ -379,6 +428,9 @@ msgid ""
 "        2. Follow the link below to set up proctoring.\n"
 "      "
 msgstr ""
+"\n"
+"        2. Follow the link below to set up proctoring.\n"
+"      "
 
 #: edx_proctoring/templates/proctored_exam/instructions.html:32
 msgid ""
@@ -386,6 +438,9 @@ msgid ""
 "        A new window will open. You will run a system check before downloading the proctoring application.\n"
 "      "
 msgstr ""
+"\n"
+"        A new window will open. You will run a system check before downloading the proctoring application.\n"
+"      "
 
 #: edx_proctoring/templates/proctored_exam/instructions.html:37
 msgid ""
@@ -393,14 +448,17 @@ msgid ""
 "        You will be asked to verify your identity before you begin the exam. Make sure you have valid photo identification, such as a driver's license or passport, before you continue.\n"
 "      "
 msgstr ""
+"\n"
+"        You will be asked to verify your identity before you begin the exam. Make sure you have valid photo identification, such as a driver's license or passport, before you continue.\n"
+"      "
 
 #: edx_proctoring/templates/proctored_exam/instructions.html:46
 msgid "Don't want to take this exam with online proctoring?"
-msgstr ""
+msgstr "Don't want to take this exam with online proctoring?"
 
 #: edx_proctoring/templates/proctored_exam/instructions.html:47
 msgid "Take this exam as an open exam instead."
-msgstr ""
+msgstr "Take this exam as an open exam instead."
 
 #: edx_proctoring/templates/proctored_exam/pending-prerequisites.html:9
 #, python-format
@@ -409,6 +467,9 @@ msgid ""
 "    You have not completed the prerequisites for this exam. All requirements must be satisfied before you can take this proctored exam and be eligible for credit. See your <a href=\"%(progress_page_url)s\">Progress</a> page for a list of requirements in the order that they must be completed.\n"
 "    "
 msgstr ""
+"\n"
+"    You have not completed the prerequisites for this exam. All requirements must be satisfied before you can take this proctored exam and be eligible for credit. See your <a href=\"%(progress_page_url)s\">Progress</a> page for a list of requirements in the order that they must be completed.\n"
+"    "
 
 #: edx_proctoring/templates/proctored_exam/pending-prerequisites.html:14
 msgid ""
@@ -416,6 +477,9 @@ msgid ""
 "    The following prerequisites are in a <strong>pending</strong> state and must be successfully completed before you can proceed:\n"
 "    "
 msgstr ""
+"\n"
+"    The following prerequisites are in a <strong>pending</strong> state and must be successfully completed before you can proceed:\n"
+"    "
 
 #: edx_proctoring/templates/proctored_exam/pending-prerequisites.html:30
 #, python-format
@@ -424,6 +488,9 @@ msgid ""
 "    You can take this exam with proctoring only when all prerequisites have been successfully completed. Check your <a href=\"%(progress_page_url)s\">Progress</a>  page to see if prerequisite results have been updated. You can also take this exam now without proctoring, but you will not be eligible for credit.\n"
 "    "
 msgstr ""
+"\n"
+"    You can take this exam with proctoring only when all prerequisites have been successfully completed. Check your <a href=\"%(progress_page_url)s\">Progress</a>  page to see if prerequisite results have been updated. You can also take this exam now without proctoring, but you will not be eligible for credit.\n"
+"    "
 
 #: edx_proctoring/templates/proctored_exam/proctoring_launch_callback.html:164
 msgid " Your Proctoring Session Has Started "
@@ -591,16 +658,18 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"    %(exam_name)s امتحان محدود بوقت (%(total_time)s)\n"
+"    %(exam_name)s هو اختبار محدد بوقت (%(total_time)s)\n"
 "    "
 
 #: edx_proctoring/templates/timed_exam/entrance.html:9
 msgid "This exam has a time limit associated with it."
-msgstr "هنالك وقت محدود لهذا الامتحان."
+msgstr "هذا الاختبار  ذو وقت محدد"
 
 #: edx_proctoring/templates/timed_exam/entrance.html:11
 msgid "To pass this exam, you must complete the problems in the time allowed."
-msgstr "حتى تنجح في هذا الإمتحان، يجب عليك حل اﻷسئلة في الوقت المخصص له."
+msgstr ""
+"ولكي تنجح يجب عليك حل جميع الاسئلة ثم الضغط على زر \"أنهي اختباري\" قبل "
+"انتهاء الوقت."
 
 #: edx_proctoring/templates/timed_exam/entrance.html:13
 msgid "After you select "
@@ -608,7 +677,7 @@ msgstr "بعد قيامك بإختيار"
 
 #: edx_proctoring/templates/timed_exam/entrance.html:15
 msgid "I am ready to start this timed exam"
-msgstr "انا مستعد لبدء الإمتحان"
+msgstr "أنا مستعد لبدء الاختبار"
 
 #: edx_proctoring/templates/timed_exam/entrance.html:17
 msgid ", you will have "
@@ -616,7 +685,7 @@ msgstr "، سيكون معك "
 
 #: edx_proctoring/templates/timed_exam/entrance.html:17
 msgid " to complete and submit the exam."
-msgstr "لإنهاء اﻹمتحان و تسليمه."
+msgstr "لإنهاء الاختبار وتسليمه."
 
 #: edx_proctoring/templates/timed_exam/entrance.html:21
 msgid ""
@@ -625,7 +694,7 @@ msgid ""
 "      "
 msgstr ""
 "\n"
-"     أنا مستعد للبدء بالإمتحان.\n"
+"     أنا مستعد لبدء الاختبار.\n"
 "      "
 
 #: edx_proctoring/templates/timed_exam/entrance.html:24
@@ -639,13 +708,13 @@ msgid ""
 "connection problem, or there has been a service disruption.Please check "
 "these potential problems and try again."
 msgstr ""
-"حدث مشكلة أثناء تشغيل إمتحانك.\\n\\n الأسباب المحتملة أنه لم يتم تفعيل "
+"حدث مشكلة أثناء تشغيل اختبارك \\n\\n الأسباب المحتملة أنه لم يتم تفعيل "
 "حسابك، أو هنالك مشكلة بالشبكة، أو انقطاع الخدمة. الرجاء التأكد من هذه "
 "الأسباب المحتملة و اعادة المحاولة مرة أخرى."
 
 #: edx_proctoring/templates/timed_exam/footer.html:3
 msgid "Can I request additional time to complete my exam?"
-msgstr "هل يمكنني طلب وقت إضافي لأتمكن من إنهاء إمتحاني؟"
+msgstr " هل يمكنني طلب وقت إضافي لأتمكن من إنهاء اختباري؟"
 
 #: edx_proctoring/templates/timed_exam/footer.html:4
 msgid ""
@@ -656,9 +725,8 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"      اذا كنت من ذوي الإحتياجات الخاصة أو كنت تقوم بتقديم الإمتحان تحت ظروف صعبة،\n"
-"      يمكن أخذ حالتك في عين الإعتبار لتمديد مدة تقديم الإمتحان.\n"
-"      للمزيد من المعملومات، تواصل مع فريق المساق.\n"
+"     اذا كنت تقوم بتقديم الاختبار تحت ظروف صعبة، يمكن أخذ حالتك في عين الاعتبار لتمديد مدة تقديم الاختبار.\n"
+"      للمزيد من المعلومات، تواصل مع فريق المساق\n"
 "    "
 
 #: edx_proctoring/templates/timed_exam/ready_to_submit.html:4
@@ -668,8 +736,8 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"      هل أنت متأكد من أنك تود تسليم أسئلة إمتحانك؟ \n"
-"    "
+"      هل انت متأكد من تسليمك الاختبار؟ \n"
+"  "
 
 #: edx_proctoring/templates/timed_exam/ready_to_submit.html:9
 msgid ""
@@ -678,7 +746,7 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"      بعد أن تتحقق من أجوبتك قم بتسليم امتحانك ليتم تصليحه واحتساب علاماتك.\n"
+"      بعد أن تتحقق من أجوبتك قم بتسليم اختبارك ليتم تقييمه واحتساب علاماتك.\n"
 "    "
 
 #: edx_proctoring/templates/timed_exam/ready_to_submit.html:14
@@ -688,7 +756,7 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"      بلى، قم بالتسليم.\n"
+"      نعم قم بالتسليم.\n"
 "    "
 
 #: edx_proctoring/templates/timed_exam/ready_to_submit.html:20
@@ -698,7 +766,7 @@ msgid ""
 "      "
 msgstr ""
 "\n"
-"        ليس بعد، أود أن أكمل حل اﻷسئلة.\n"
+"        لا، اود ان اكمل حل الاسئلة.\n"
 "      "
 
 #: edx_proctoring/templates/timed_exam/submitted.html:4
@@ -708,7 +776,7 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"      لقد قمت بتسليم امتحانك.\n"
+"      لقد قمت بتسليم اختبارك.\n"
 "    "
 
 #: edx_proctoring/templates/timed_exam/submitted.html:10
@@ -719,7 +787,7 @@ msgid ""
 "    "
 msgstr ""
 "\n"
-"      تقييم امتحانك متوفر على الفور على صفحة  <a href=\"%(progress_page_url)s\">العلامات</a>.\n"
+"     تم تقييم الاختبار ولمراجعة علامتك يمكنك الرجوع الى صفحة  <a href=\"%(progress_page_url)s\">العلامات</a>.\n"
 "    "
 
 #: edx_proctoring/templates/timed_exam/submitted.html:14
@@ -729,10 +797,10 @@ msgid ""
 "      "
 msgstr ""
 "\n"
-"        بعد انقضاء مدة الاستحقاق يمكنك مراجعة أجوبتك، لكن لن يكون بإستطاعتك إجراء أي تعديل.\n"
+"        بعد تاريخ استحقاق الاختبار يمكنك مراجعة اجاباتك ولكن لن يكون باستطاعتك اجراء اي تعديل.\n"
 "      "
 
-#: edx_proctoring/utils.py:67
+#: edx_proctoring/utils.py:69
 #, python-brace-format
 msgid "{num_of_hours} hour"
 msgid_plural "{num_of_hours} hours"
@@ -743,11 +811,11 @@ msgstr[3] "{num_of_hours} ساعات"
 msgstr[4] "{num_of_hours} ساعات"
 msgstr[5] "{num_of_hours} ساعات"
 
-#: edx_proctoring/utils.py:70
+#: edx_proctoring/utils.py:74
 msgid " and "
 msgstr " و "
 
-#: edx_proctoring/utils.py:71
+#: edx_proctoring/utils.py:75
 #, python-brace-format
 msgid "{num_of_minutes} minute"
 msgid_plural "{num_of_minutes} minutes"
