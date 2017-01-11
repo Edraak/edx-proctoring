@@ -1310,7 +1310,7 @@ def _get_timed_exam_view(exam, context, exam_id, user_id, course_id):
                 allowed_time_limit_mins += int(allowance_extra_mins)
 
             # apply any cut off times according to due dates
-            allowed_time_limit_mins, _ = _calculate_allowed_mins(
+            dummy_allowed_time_limit_mins, _ = _calculate_allowed_mins(
                 exam['due_date'],
                 allowed_time_limit_mins
             )

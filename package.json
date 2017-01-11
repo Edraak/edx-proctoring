@@ -2,17 +2,18 @@
   "name": "edx-proctoring",
   "repository": {
     "type": "git",
-    "url": "git://github.com/edx/edx-proctoring"
+    "url": "git://github.com/Edraak/edx-proctoring"
   },
   "devDependencies": {
     "gulp": "^3.9.0",
     "gulp-karma": "0.0.1",
     "karma": "^0.13.0",
-    "karma-chrome-launcher": "^0.2.0",
-    "karma-coverage": "latest",
-    "karma-firefox-launcher": "latest",
+    "karma-coverage": "^1.1.1",
     "karma-jasmine": "^0.3.6",
-    "karma-jasmine-jquery": "0.1.1",
-    "karma-sinon": "latest"
+    "karma-jasmine-jquery": "^0.1.1",
+    "karma-phantomjs-launcher": "^1.0.2",
+    "karma-sinon": "latest",
+    "phantomjs": "^2.1.7",
+    "sinon": "^1.17.6"
   }
 }

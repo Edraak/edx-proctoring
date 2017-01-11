@@ -1,4 +1,3 @@
-
 //Add ability to turn coverage off when the tests are run in debug mode
 var sourcePreprocessors = 'coverage';
 
@@ -19,15 +18,14 @@ module.exports = function(config) {
     plugins:[
         'karma-jasmine',
         'karma-jasmine-jquery',
-        'karma-firefox-launcher',
+        'karma-phantomjs-launcher',
         'karma-jasmine-jquery',
-        'karma-chrome-launcher',
         'karma-coverage',
         'karma-sinon'
     ],
 
     // start the browser
-    browsers: ['Firefox'],
+    browsers: ['PhantomJS'],
 
     //frameworks to use
     frameworks: ['jasmine-jquery', 'jasmine', 'sinon'],

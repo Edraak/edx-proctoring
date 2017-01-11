@@ -6,7 +6,7 @@ import pytz
 import logging
 from datetime import datetime, timedelta
 
-from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext as _, ungettext
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
@@ -61,37 +61,21 @@ def humanized_time(time_in_minutes):
     """
     hours = int(time_in_minutes / 60)
     minutes = time_in_minutes % 60
+    display = ""
 
-    hours_present = False
-    if hours == 0:
-        hours_present = False
-        template = ""
-    elif hours == 1:
-        template = _("{num_of_hours} hour")
-        hours_present = True
-    elif hours >= 2:
-        template = _("{num_of_hours} hours")
-        hours_present = True
-    else:
-        template = "error"
+    if hours < 0:
+        return "error"
+    elif hours > 0:
+        display += ungettext("{num_of_hours} hour", "{num_of_hours} hours", hours)\
+            .format(num_of_hours=hours)
 
-    if template != "error":
-        if minutes == 0:
-            if not hours_present:
-                template = _("{num_of_minutes} minutes")
-        elif minutes == 1:
-            if hours_present:
-                template += _(" and {num_of_minutes} minute")
-            else:
-                template += _("{num_of_minutes} minute")
-        else:
-            if hours_present:
-                template += _(" and {num_of_minutes} minutes")
-            else:
-                template += _("{num_of_minutes} minutes")
+    if display == "" or minutes > 0:
+        if display != '':
+            display += _(" and ")
+        display += ungettext("{num_of_minutes} minute", "{num_of_minutes} minutes", minutes)\
+            .format(num_of_minutes=minutes)
 
-    human_time = template.format(num_of_hours=hours, num_of_minutes=minutes)
-    return human_time
+    return display
 
 
 def locate_attempt_by_attempt_code(attempt_code):
