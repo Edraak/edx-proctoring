@@ -1,15 +1,15 @@
 var gulp = require('gulp');
-var karmaServer = require('karma').Server;
+var karma = require('karma').server;
 var coverageOnOff = 'coverage';
 
 /**
  * Run test once and exit
  */
 gulp.task('test', function (done) {
-  new karmaServer({
+  karma.start({
     configFile: __dirname + '/karma.conf.js',
     singleRun: true
-  }, done).start();
+  }, done);
 });
 
 /**

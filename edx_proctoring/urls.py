@@ -1,10 +1,13 @@
 """
 URL mappings for edX Proctoring Server.
 """
-from edx_proctoring import views, callbacks
-from django.conf import settings
 
+from __future__ import absolute_import
+
+from django.conf import settings
 from django.conf.urls import patterns, url, include
+
+from edx_proctoring import views, callbacks
 
 urlpatterns = patterns(  # pylint: disable=invalid-name
     '',
@@ -52,6 +55,11 @@ urlpatterns = patterns(  # pylint: disable=invalid-name
         name='edx_proctoring.proctored_exam.attempt.collection'
     ),
     url(
+        r'edx_proctoring/v1/proctored_exam/attempt/(?P<attempt_id>\d+)/review_status$',
+        views.ProctoredExamAttemptReviewStatus.as_view(),
+        name='edx_proctoring.proctored_exam.attempt.review_status'
+    ),
+    url(
         r'edx_proctoring/v1/proctored_exam/{}/allowance$'.format(settings.COURSE_ID_PATTERN),
         views.ExamAllowanceView.as_view(),
         name='edx_proctoring.proctored_exam.allowance'
@@ -79,11 +87,6 @@ urlpatterns = patterns(  # pylint: disable=invalid-name
         r'edx_proctoring/proctoring_review_callback/$',
         callbacks.ExamReviewCallback.as_view(),
         name='edx_proctoring.anonymous.proctoring_review_callback'
-    ),
-    url(
-        r'edx_proctoring/proctoring_poll_status/(?P<attempt_code>[-\w]+)$',
-        callbacks.AttemptStatus.as_view(),
-        name='edx_proctoring.anonymous.proctoring_poll_status'
     ),
     url(r'^', include('rest_framework.urls', namespace='rest_framework'))
 )

@@ -2,7 +2,10 @@
 Tests for the custom StrictBooleanField serializer used by the ProctoredExamSerializer
 """
 
+from __future__ import absolute_import
+
 import unittest
+
 from edx_proctoring.serializers import ProctoredExamSerializer
 
 
@@ -23,7 +26,8 @@ class TestProctoredExamSerializer(unittest.TestCase):
             'external_id': '123',
             'is_proctored': 'bla',
             'is_practice_exam': 'bla',
-            'is_active': 'f'
+            'is_active': 'f',
+            'hide_after_due': 't',
         }
         serializer = ProctoredExamSerializer(data=data)
 

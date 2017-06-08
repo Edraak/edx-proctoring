@@ -2,18 +2,19 @@
 Proctored Exams HTTP-based API endpoints
 """
 
-import logging
-import pytz
-from datetime import datetime
+from __future__ import absolute_import
 
+import logging
+
+from django.conf import settings
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.core.urlresolvers import reverse, NoReverseMatch
 from django.utils.translation import ugettext as _
 from django.utils.decorators import method_decorator
-from django.conf import settings
-from django.core.urlresolvers import reverse, NoReverseMatch
 
 from rest_framework import status
 from rest_framework.response import Response
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 from edx_proctoring.api import (
     create_exam,
     update_exam,
@@ -29,7 +30,9 @@ from edx_proctoring.api import (
     get_all_exams_for_course,
     get_exam_attempt_by_id,
     remove_exam_attempt,
-    update_attempt_status
+    update_attempt_status,
+    update_exam_attempt,
+    has_due_date_passed,
 )
 from edx_proctoring.exceptions import (
     ProctoredBaseException,
@@ -37,11 +40,9 @@ from edx_proctoring.exceptions import (
     UserNotFoundException,
     ProctoredExamPermissionDenied,
     StudentExamAttemptDoesNotExistsException,
-    ProctoredExamIllegalStatusTransition,
     ProctoredExamNotActiveException,
     AllowanceValueNotAllowedException
 )
-from edx_proctoring import constants
 from edx_proctoring.runtime import get_runtime_service
 from edx_proctoring.serializers import ProctoredExamSerializer, ProctoredExamStudentAttemptSerializer
 from edx_proctoring.models import ProctoredExamStudentAttemptStatus, ProctoredExamStudentAttempt, ProctoredExam
@@ -50,7 +51,6 @@ from edx_proctoring.utils import (
     AuthenticatedAPIView,
     get_time_remaining_for_attempt,
     humanized_time,
-    has_client_app_shutdown,
 )
 
 ATTEMPTS_PER_PAGE = 25
@@ -187,7 +187,8 @@ class ProctoredExamView(AuthenticatedAPIView):
                 is_proctored=request.data.get('is_proctored', None),
                 is_practice_exam=request.data.get('is_practice_exam', None),
                 external_id=request.data.get('external_id', None),
-                is_active=request.data.get('is_active', None)
+                is_active=request.data.get('is_active', None),
+                hide_after_due=request.data.get('hide_after_due', None),
             )
             return Response({'exam_id': exam_id})
         else:
@@ -211,6 +212,7 @@ class ProctoredExamView(AuthenticatedAPIView):
                 is_practice_exam=request.data.get('is_practice_exam', None),
                 external_id=request.data.get('external_id', None),
                 is_active=request.data.get('is_active', None),
+                hide_after_due=request.data.get('hide_after_due', None),
             )
             return Response({'exam_id': exam_id})
         except ProctoredExamNotFoundException, ex:
@@ -324,36 +326,7 @@ class StudentProctoredExamAttempt(AuthenticatedAPIView):
                 )
                 raise ProctoredExamPermissionDenied(err_msg)
 
-            # check if the last_poll_timestamp is not None
-            # and if it is older than SOFTWARE_SECURE_CLIENT_TIMEOUT
-            # then attempt status should be marked as error.
-            last_poll_timestamp = attempt['last_poll_timestamp']
-
-            # if we never heard from the client, then we assume it is shut down
-            attempt['client_has_shutdown'] = last_poll_timestamp is None
-
-            if last_poll_timestamp is not None:
-                # Let's pass along information if we think the SoftwareSecure has completed
-                # a healthy shutdown which is when our attempt is in a 'submitted' status
-                if attempt['status'] == ProctoredExamStudentAttemptStatus.submitted:
-                    attempt['client_has_shutdown'] = has_client_app_shutdown(attempt)
-                else:
-                    # otherwise, let's see if the shutdown happened in error
-                    # e.g. a crash
-                    time_passed_since_last_poll = (datetime.now(pytz.UTC) - last_poll_timestamp).total_seconds()
-                    if time_passed_since_last_poll > constants.SOFTWARE_SECURE_CLIENT_TIMEOUT:
-                        try:
-                            update_attempt_status(
-                                attempt['proctored_exam']['id'],
-                                attempt['user']['id'],
-                                ProctoredExamStudentAttemptStatus.error
-                            )
-                            attempt['status'] = ProctoredExamStudentAttemptStatus.error
-                        except ProctoredExamIllegalStatusTransition:
-                            # don't transition a completed state to an error state
-                            pass
-
-            # add in the computed time remaining as a helper to a client app
+            # add in the computed time remaining as a helper
             time_remaining_seconds = get_time_remaining_for_attempt(attempt)
 
             attempt['time_remaining_seconds'] = time_remaining_seconds
@@ -462,7 +435,7 @@ class StudentProctoredExamAttempt(AuthenticatedAPIView):
                 )
                 raise StudentExamAttemptDoesNotExistsException(err_msg)
 
-            remove_exam_attempt(attempt_id)
+            remove_exam_attempt(attempt_id, request.user)
             return Response()
 
         except ProctoredBaseException, ex:
@@ -550,16 +523,19 @@ class StudentProctoredExamAttemptCollection(AuthenticatedAPIView):
                 # resolve the LMS url, note we can't assume we're running in
                 # a same process as the LMS
                 exam_url_path = reverse(
-                    'courseware.views.jump_to',
+                    'courseware.views.views.jump_to',
                     args=[exam['course_id'], exam['content_id']]
                 )
             except NoReverseMatch:
-                pass
+                LOG.exception("Can't find exam url for course %s", exam['course_id'])
 
             response_dict = {
                 'in_timed_exam': True,
                 'taking_as_proctored': attempt['taking_as_proctored'],
-                'exam_type': _('proctored') if attempt['taking_as_proctored'] else _('timed'),
+                'exam_type': (
+                    _('timed') if not attempt['taking_as_proctored'] else
+                    (_('practice') if attempt['is_sample_attempt'] else _('proctored'))
+                ),
                 'exam_display_name': exam['exam_name'],
                 'exam_url_path': exam_url_path,
                 'time_remaining_seconds': time_remaining_seconds,
@@ -591,13 +567,20 @@ class StudentProctoredExamAttemptCollection(AuthenticatedAPIView):
         exam_id = request.data.get('exam_id', None)
         attempt_proctored = request.data.get('attempt_proctored', 'false').lower() == 'true'
         try:
+            exam = get_exam_by_id(exam_id)
+
+            # Bypassing the due date check for practice exam
+            # because student can attempt the practice after the due date
+            if not exam.get("is_practice_exam") and has_due_date_passed(exam.get('due_date')):
+                raise ProctoredExamPermissionDenied(
+                    'Attempted to access expired exam with exam_id {exam_id}'.format(exam_id=exam_id)
+                )
+
             exam_attempt_id = create_exam_attempt(
                 exam_id=exam_id,
                 user_id=request.user.id,
                 taking_as_proctored=attempt_proctored
             )
-
-            exam = get_exam_by_id(exam_id)
 
             # if use elected not to take as proctored exam, then
             # use must take as open book, and loose credit eligibility
@@ -779,3 +762,42 @@ class ActiveExamsForUserView(AuthenticatedAPIView):
             user_id=request.data.get('user_id', None),
             course_id=request.data.get('course_id', None)
         ))
+
+
+class ProctoredExamAttemptReviewStatus(AuthenticatedAPIView):
+    """
+    Endpoint for updating exam attempt's review status to acknowledged.
+    edx_proctoring/v1/proctored_exam/attempt/(<attempt_id>)/review_status$
+
+    Supports:
+        HTTP PUT: Update the is_status_acknowledge flag
+    """
+    def put(self, request, attempt_id):     # pylint: disable=unused-argument
+        """
+        Update the is_status_acknowledge flag for the specific attempt
+        """
+        try:
+            attempt = get_exam_attempt_by_id(attempt_id)
+
+            # make sure the the attempt belongs to the calling user_id
+            if attempt and attempt['user']['id'] != request.user.id:
+                err_msg = (
+                    'Attempted to access attempt_id {attempt_id} but '
+                    'does not have access to it.'.format(
+                        attempt_id=attempt_id
+                    )
+                )
+                raise ProctoredExamPermissionDenied(err_msg)
+
+            update_exam_attempt(attempt_id, is_status_acknowledged=True)
+
+            return Response(
+                status=status.HTTP_200_OK
+            )
+
+        except (StudentExamAttemptDoesNotExistsException, ProctoredExamPermissionDenied) as ex:
+            LOG.exception(ex)
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={"detail": str(ex)}
+            )

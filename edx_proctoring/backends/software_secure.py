@@ -2,18 +2,22 @@
 Integration with Software Secure's proctoring system
 """
 
-from Crypto.Cipher import DES3
+from __future__ import absolute_import
+
 import base64
-from hashlib import sha256
-import requests
-import hmac
 import binascii
 import datetime
+from hashlib import sha256
+import hmac
 import json
 import logging
 import unicodedata
 
+import requests
+
 from django.conf import settings
+
+from Crypto.Cipher import DES3
 
 from edx_proctoring.backends.backend import ProctoringBackendProvider
 from edx_proctoring import constants
@@ -24,6 +28,7 @@ from edx_proctoring.exceptions import (
     ProctoredExamReviewAlreadyExists,
     ProctoredExamBadReviewStatus,
 )
+from edx_proctoring.runtime import get_runtime_service
 from edx_proctoring.utils import locate_attempt_by_attempt_code, emit_event
 from edx_proctoring. models import (
     ProctoredExamSoftwareSecureReview,
@@ -37,7 +42,7 @@ from edx_proctoring.serializers import (
 log = logging.getLogger(__name__)
 
 
-SOFTWARE_SECURE_INVALID_CHARS = '[]<>#:|?/\'"*\\'
+SOFTWARE_SECURE_INVALID_CHARS = '[]<>#:|!?/\'"*\\'
 
 
 class SoftwareSecureBackendProvider(ProctoringBackendProvider):
@@ -47,7 +52,8 @@ class SoftwareSecureBackendProvider(ProctoringBackendProvider):
     """
 
     def __init__(self, organization, exam_sponsor, exam_register_endpoint,
-                 secret_key_id, secret_key, crypto_key, software_download_url):
+                 secret_key_id, secret_key, crypto_key, software_download_url,
+                 send_email=False):
         """
         Class initializer
         """
@@ -60,8 +66,10 @@ class SoftwareSecureBackendProvider(ProctoringBackendProvider):
         self.crypto_key = crypto_key
         self.timeout = 10
         self.software_download_url = software_download_url
+        self.send_email = send_email
         self.passing_review_status = ['Clean', 'Rules Violation']
         self.failing_review_status = ['Not Reviewed', 'Suspicious']
+        self.notify_support_for_status = ['Suspicious']
 
     def register_exam_attempt(self, exam, context):
         """
@@ -129,6 +137,10 @@ class SoftwareSecureBackendProvider(ProctoringBackendProvider):
         documentation named "Reviewer Data Transfer"
         """
 
+        # redact the videoReviewLink from the payload
+        if 'videoReviewLink' in payload:
+            del payload['videoReviewLink']
+
         log_msg = (
             'Received callback from SoftwareSecure with review data: {payload}'.format(
                 payload=payload
@@ -187,10 +199,6 @@ class SoftwareSecureBackendProvider(ProctoringBackendProvider):
             )
             raise ProctoredExamSuspiciousLookup(err_msg)
 
-        # do some limited parsing of the JSON payload
-        review_status = payload['reviewStatus']
-        video_review_link = payload['videoReviewLink']
-
         # do we already have a review for this attempt?!? We may not allow updates
         review = ProctoredExamSoftwareSecureReview.get_review_by_attempt_code(attempt_code)
 
@@ -221,7 +229,6 @@ class SoftwareSecureBackendProvider(ProctoringBackendProvider):
         review.attempt_code = attempt_code
         review.raw_data = json.dumps(payload)
         review.review_status = review_status
-        review.video_url = video_review_link
         review.student = attempt_obj.user
         review.exam = attempt_obj.proctored_exam
         # set reviewed_by to None because it was reviewed by our 3rd party
@@ -244,25 +251,23 @@ class SoftwareSecureBackendProvider(ProctoringBackendProvider):
             # update our attempt status, note we have to import api.py here because
             # api.py imports software_secure.py, so we'll get an import circular reference
 
-            allow_status_update_on_fail = not constants.REQUIRE_FAILURE_SECOND_REVIEWS
+            allow_rejects = not constants.REQUIRE_FAILURE_SECOND_REVIEWS
 
-            self.on_review_saved(review, allow_status_update_on_fail=allow_status_update_on_fail)
+            self.on_review_saved(review, allow_rejects=allow_rejects)
 
-        # emit an event for 'review-received'
+        # emit an event for 'review_received'
         data = {
             'review_attempt_code': review.attempt_code,
-            'review_raw_data': review.raw_data,
             'review_status': review.review_status,
-            'review_video_url': review.video_url
         }
 
-        serialized_attempt_obj = ProctoredExamStudentAttemptSerializer(attempt_obj)
-        attempt = serialized_attempt_obj.data
-        serialized_exam_object = ProctoredExamSerializer(attempt_obj.proctored_exam)
-        exam = serialized_exam_object.data
-        emit_event(exam, 'review-received', attempt=attempt, override_data=data)
+        attempt = ProctoredExamStudentAttemptSerializer(attempt_obj).data
+        exam = ProctoredExamSerializer(attempt_obj.proctored_exam).data
+        emit_event(exam, 'review_received', attempt=attempt, override_data=data)
 
-    def on_review_saved(self, review, allow_status_update_on_fail=False):  # pylint: disable=arguments-differ
+        self._create_zendesk_ticket(review, exam, attempt)
+
+    def on_review_saved(self, review, allow_rejects=False):  # pylint: disable=arguments-differ
         """
         called when a review has been save - either through API (on_review_callback) or via Django Admin panel
         in order to trigger any workflow associated with proctoring review results
@@ -290,21 +295,23 @@ class SoftwareSecureBackendProvider(ProctoringBackendProvider):
         status = (
             ProctoredExamStudentAttemptStatus.verified
             if review.review_status in self.passing_review_status
-            else ProctoredExamStudentAttemptStatus.rejected
+            else (
+                # if we are not allowed to store 'rejected' on this
+                # code path, then put status into 'second_review_required'
+                ProctoredExamStudentAttemptStatus.rejected if allow_rejects else
+                ProctoredExamStudentAttemptStatus.second_review_required
+            )
         )
 
-        # are we allowed to update the status if we have a failure status
-        # i.e. do we need a review to come in from Django Admin panel?
-        if status == ProctoredExamStudentAttemptStatus.verified or allow_status_update_on_fail:
-            # updating attempt status will trigger workflow
-            # (i.e. updating credit eligibility table)
-            from edx_proctoring.api import update_attempt_status
+        # updating attempt status will trigger workflow
+        # (i.e. updating credit eligibility table)
+        from edx_proctoring.api import update_attempt_status
 
-            update_attempt_status(
-                attempt_obj.proctored_exam_id,
-                attempt_obj.user_id,
-                status
-            )
+        update_attempt_status(
+            attempt_obj.proctored_exam_id,
+            attempt_obj.user_id,
+            status
+        )
 
     def _save_review_comment(self, review, comment):
         """
@@ -348,6 +355,20 @@ class SoftwareSecureBackendProvider(ProctoringBackendProvider):
 
         return (first_name, last_name)
 
+    def _create_zendesk_ticket(self, review, serialized_exam_object, serialized_attempt_obj):
+        """
+        Creates a Zendesk ticket for reviews with status listed in self.notify_support_for_status
+        """
+        if review.review_status in self.notify_support_for_status:
+            instructor_service = get_runtime_service('instructor')
+            if instructor_service:
+                instructor_service.send_support_notification(
+                    course_id=serialized_exam_object["course_id"],
+                    exam_name=serialized_exam_object["exam_name"],
+                    student_username=serialized_attempt_obj["user"]["username"],
+                    review_status=review.review_status
+                )
+
     def _get_payload(self, exam, context):
         """
         Constructs the data payload that Software Secure expects
@@ -389,6 +410,18 @@ class SoftwareSecureBackendProvider(ProctoringBackendProvider):
         if not exam_name:
             exam_name = 'Proctored Exam'
 
+        org_extra = {
+            "examStartDate": start_time_str,
+            "examEndDate": end_time_str,
+            "noOfStudents": 1,
+            "examID": exam['id'],
+            "courseID": exam['course_id'],
+            "firstName": first_name,
+            "lastName": last_name
+        }
+        if self.send_email:
+            org_extra["email"] = context['email']
+
         return {
             "examCode": attempt_code,
             "organization": self.organization,
@@ -403,15 +436,7 @@ class SoftwareSecureBackendProvider(ProctoringBackendProvider):
             "ssiProduct": 'rp-now',
             # need to pass in a URL to the LMS?
             "examUrl": callback_url,
-            "orgExtra": {
-                "examStartDate": start_time_str,
-                "examEndDate": end_time_str,
-                "noOfStudents": 1,
-                "examID": exam['id'],
-                "courseID": exam['course_id'],
-                "firstName": first_name,
-                "lastName": last_name,
-            }
+            "orgExtra": org_extra
         }
 
     def _header_string(self, headers, date):
@@ -474,7 +499,8 @@ class SoftwareSecureBackendProvider(ProctoringBackendProvider):
         message = str(message)
 
         log_msg = (
-            'About to send payload to SoftwareSecure:\n{message}'.format(message=message)
+            'About to send payload to SoftwareSecure: examCode: {examCode}, courseID: {courseID}'.
+            format(examCode=body_json.get('examCode'), courseID=body_json.get('orgExtra').get('courseID'))
         )
         log.info(log_msg)
 

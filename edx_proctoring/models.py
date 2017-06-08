@@ -2,22 +2,30 @@
 """
 Data models for the proctoring subsystem
 """
-from django.db import models
-from django.db.models import Q
-from django.db.models.signals import pre_save, pre_delete
-from django.dispatch import receiver
-from model_utils.models import TimeStampedModel
-from django.utils.translation import ugettext as _
+
+# pylint: disable=model-missing-unicode
+
+from __future__ import absolute_import
+import six
 
 from django.contrib.auth.models import User
+from django.db import models
+from django.db.models import Q
+from django.db.models.base import ObjectDoesNotExist
+from django.db.models.signals import pre_save, pre_delete
+from django.dispatch import receiver
+from django.utils.translation import ugettext as _, ugettext_noop
+
+from model_utils.models import TimeStampedModel
+
 from edx_proctoring.exceptions import (
     UserNotFoundException,
     ProctoredExamNotActiveException,
     AllowanceValueNotAllowedException
 )
-from django.db.models.base import ObjectDoesNotExist
 
 
+@six.python_2_unicode_compatible
 class ProctoredExam(TimeStampedModel):
     """
     Information about the Proctored Exam.
@@ -50,16 +58,16 @@ class ProctoredExam(TimeStampedModel):
     # Whether this exam will be active.
     is_active = models.BooleanField(default=False)
 
+    # Whether to hide this exam after the due date
+    hide_after_due = models.BooleanField(default=False)
+
     class Meta:
         """ Meta class for this Django model """
         unique_together = (('course_id', 'content_id'),)
         db_table = 'proctoring_proctoredexam'
 
-    def __unicode__(self):
-        """
-        How to serialize myself as a string
-        """
-
+    def __str__(self):
+        # pragma: no cover
         return u"{course_id}: {exam_name} ({active})".format(
             course_id=self.course_id,
             exam_name=self.exam_name,
@@ -91,7 +99,8 @@ class ProctoredExam(TimeStampedModel):
         return proctored_exam
 
     @classmethod
-    def get_all_exams_for_course(cls, course_id, active_only=False, timed_exams_only=False):
+    def get_all_exams_for_course(cls, course_id, active_only=False, timed_exams_only=False,
+                                 proctored_exams_only=False):
         """
         Returns all exams for a give course
         """
@@ -101,6 +110,8 @@ class ProctoredExam(TimeStampedModel):
             filtered_query = filtered_query & Q(is_active=True)
         if timed_exams_only:
             filtered_query = filtered_query & Q(is_proctored=False)
+        if proctored_exams_only:
+            filtered_query = filtered_query & Q(is_proctored=True) & Q(is_practice_exam=False)
 
         return cls.objects.filter(filtered_query)
 
@@ -150,23 +161,26 @@ class ProctoredExamStudentAttemptStatus(object):
     # the student has submitted the exam for proctoring review
     submitted = 'submitted'
 
+    # the student has submitted the exam for proctoring review
+    second_review_required = 'second_review_required'
+
     # the exam has been verified and approved
     verified = 'verified'
 
     # the exam has been rejected
     rejected = 'rejected'
 
-    # the exam was not reviewed
-    not_reviewed = 'not_reviewed'
-
     # the exam is believed to be in error
     error = 'error'
 
+    # the course end date has passed
+    expired = 'expired'
+
     # status alias for sending email
     status_alias_mapping = {
-        submitted: _('pending'),
-        verified: _('satisfactory'),
-        rejected: _('unsatisfactory')
+        submitted: ugettext_noop('pending'),
+        verified: ugettext_noop('satisfactory'),
+        rejected: ugettext_noop('unsatisfactory')
     }
 
     @classmethod
@@ -176,8 +190,8 @@ class ProctoredExamStudentAttemptStatus(object):
         that it cannot go backwards in state
         """
         return status in [
-            cls.declined, cls.timed_out, cls.submitted, cls.verified, cls.rejected,
-            cls.not_reviewed, cls.error
+            cls.declined, cls.timed_out, cls.submitted, cls.second_review_required,
+            cls.verified, cls.rejected, cls.error
         ]
 
     @classmethod
@@ -196,8 +210,7 @@ class ProctoredExamStudentAttemptStatus(object):
         Returns a boolean if the passed in to_status calls for an update to the credit requirement status.
         """
         return to_status in [
-            cls.verified, cls.rejected, cls.declined, cls.not_reviewed, cls.submitted,
-            cls.error
+            cls.verified, cls.rejected, cls.declined, cls.submitted, cls.error
         ]
 
     @classmethod
@@ -225,8 +238,10 @@ class ProctoredExamStudentAttemptStatus(object):
         """
         Returns status alias used in email
         """
+        status_alias = cls.status_alias_mapping.get(status, None)
 
-        return cls.status_alias_mapping.get(status, '')
+        # Note that the alias is localized here as it is untranslated in the model
+        return _(status_alias) if status_alias else ''  # pylint: disable=translation-of-non-string
 
     @classmethod
     def is_valid_status(cls, status):
@@ -236,6 +251,7 @@ class ProctoredExamStudentAttemptStatus(object):
         return cls.is_completed_status(status) or cls.is_incomplete_status(status)
 
 
+@six.python_2_unicode_compatible
 class ProctoredExamReviewPolicy(TimeStampedModel):
     """
     This is how an instructor can set review policies for a proctored exam
@@ -249,6 +265,13 @@ class ProctoredExamReviewPolicy(TimeStampedModel):
 
     # policy that will be passed to reviewers
     review_policy = models.TextField()
+
+    def __str__(self):
+        # pragma: no cover
+        return u"ProctoredExamReviewPolicy: {set_by_user} ({proctored_exam})".format(
+            set_by_user=self.set_by_user,
+            proctored_exam=self.proctored_exam,
+        )
 
     class Meta:
         """ Meta class for this Django model """
@@ -395,6 +418,17 @@ class ProctoredExamStudentAttemptManager(models.Manager):
 
         return self.filter(filtered_query).order_by('-created')  # pylint: disable=no-member
 
+    def get_proctored_exam_attempts(self, course_id, username):
+        """
+        Returns the Student's Proctored Exam Attempts for the given course_id.
+        """
+        return self.filter(
+            proctored_exam__course_id=course_id,
+            user__username=username,
+            taking_as_proctored=True,
+            is_sample_attempt=False,
+        ).order_by('-completed_at')
+
     def get_active_student_attempts(self, user_id, course_id=None):
         """
         Returns the active student exams (user in-progress exams)
@@ -424,6 +458,8 @@ class ProctoredExamStudentAttempt(TimeStampedModel):
     # completed_at means when the attempt was 'submitted'
     completed_at = models.DateTimeField(null=True)
 
+    # These two fields have been deprecated.
+    # They were used in client polling that no longer exists.
     last_poll_timestamp = models.DateTimeField(null=True)
     last_poll_ipaddr = models.CharField(max_length=32, null=True)
 
@@ -442,11 +478,11 @@ class ProctoredExamStudentAttempt(TimeStampedModel):
 
     # if the user is attempting this as a proctored exam
     # in case there is an option to opt-out
-    taking_as_proctored = models.BooleanField(default=False)
+    taking_as_proctored = models.BooleanField(default=False, verbose_name=ugettext_noop("Taking as Proctored"))
 
     # Whether this attempt is considered a sample attempt, e.g. to try out
     # the proctoring software
-    is_sample_attempt = models.BooleanField(default=False)
+    is_sample_attempt = models.BooleanField(default=False, verbose_name=ugettext_noop("Is Sample Attempt"))
 
     student_name = models.CharField(max_length=255)
 
@@ -454,6 +490,10 @@ class ProctoredExamStudentAttempt(TimeStampedModel):
     # Note that this is not a foreign key because
     # this ID might point to a record that is in the History table
     review_policy_id = models.IntegerField(null=True)
+
+    # if student has press the button to explore the exam then true
+    # else always false
+    is_status_acknowledged = models.BooleanField(default=False)
 
     class Meta:
         """ Meta class for this Django model """
@@ -535,6 +575,8 @@ class ProctoredExamStudentAttemptHistory(TimeStampedModel):
     # this ID might point to a record that is in the History table
     review_policy_id = models.IntegerField(null=True)
 
+    # These two fields have been deprecated.
+    # They were used in client polling that no longer exists.
     last_poll_timestamp = models.DateTimeField(null=True)
     last_poll_ipaddr = models.CharField(max_length=32, null=True)
 
@@ -655,8 +697,8 @@ class ProctoredExamStudentAllowance(TimeStampedModel):
 
     # DONT EDIT THE KEYS - THE FIRST VALUE OF THE TUPLE - AS ARE THEY ARE STORED IN THE DATABASE
     # THE SECOND ELEMENT OF THE TUPLE IS A DISPLAY STRING AND CAN BE EDITED
-    ADDITIONAL_TIME_GRANTED = ('additional_time_granted', _('Additional Time (minutes)'))
-    REVIEW_POLICY_EXCEPTION = ('review_policy_exception', _('Review Policy Exception'))
+    ADDITIONAL_TIME_GRANTED = ('additional_time_granted', ugettext_noop('Additional Time (minutes)'))
+    REVIEW_POLICY_EXCEPTION = ('review_policy_exception', ugettext_noop('Review Policy Exception'))
 
     all_allowances = [
         ADDITIONAL_TIME_GRANTED + REVIEW_POLICY_EXCEPTION
@@ -854,7 +896,7 @@ class ProctoredExamSoftwareSecureReview(TimeStampedModel):
     """
 
     # which student attempt is this feedback for?
-    attempt_code = models.CharField(max_length=255, db_index=True)
+    attempt_code = models.CharField(max_length=255, db_index=True, unique=True)
 
     # overall status of the review
     review_status = models.CharField(max_length=255)
@@ -864,6 +906,8 @@ class ProctoredExamSoftwareSecureReview(TimeStampedModel):
     raw_data = models.TextField()
 
     # URL for the exam video that had been reviewed
+    # NOTE: To be deleted in future release, once the code that depends on it
+    # has been removed
     video_url = models.TextField()
 
     # user_id of person who did the review (can be None if submitted via server-to-server API)
@@ -965,7 +1009,6 @@ def _make_review_archive_copy(instance):
         attempt_code=instance.attempt_code,
         review_status=instance.review_status,
         raw_data=instance.raw_data,
-        video_url=instance.video_url,
         reviewed_by=instance.reviewed_by,
         student=instance.student,
         exam=instance.exam,

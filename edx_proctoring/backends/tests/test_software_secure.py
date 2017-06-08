@@ -4,9 +4,10 @@
 Tests for the software_secure module
 """
 
+from __future__ import absolute_import
+
 import json
 import ddt
-from string import Template  # pylint: disable=deprecated-module
 from mock import patch
 from httmock import all_requests, HTTMock
 
@@ -41,11 +42,8 @@ from edx_proctoring.models import (
     ProctoredExamStudentAttemptHistory,
     ProctoredExamStudentAllowance
 )
-from edx_proctoring.backends.tests.test_review_payload import (
-    TEST_REVIEW_PAYLOAD
-)
-
-from edx_proctoring.tests.test_services import MockCreditService
+from edx_proctoring.backends.tests.test_review_payload import create_test_review_payload
+from edx_proctoring.tests.test_services import MockCreditService, MockInstructorService
 from edx_proctoring.backends.software_secure import SOFTWARE_SECURE_INVALID_CHARS
 
 
@@ -84,7 +82,8 @@ def mock_response_error(url, request):  # pylint: disable=unused-argument
             "exam_register_endpoint": "http://test",
             "organization": "edx",
             "exam_sponsor": "edX LMS",
-            "software_download_url": "http://example.com"
+            "software_download_url": "http://example.com",
+            "send_email": True
         }
     }
 )
@@ -103,11 +102,13 @@ class SoftwareSecureTests(TestCase):
         self.user.save()
 
         set_runtime_service('credit', MockCreditService())
+        set_runtime_service('instructor', MockInstructorService())
 
     def tearDown(self):
         """
         When tests are done
         """
+        super(SoftwareSecureTests, self).tearDown()
         set_runtime_service('credit', None)
 
     def test_provider_instance(self):
@@ -227,7 +228,7 @@ class SoftwareSecureTests(TestCase):
             self.assertNotIn('review_policy', context)
 
             # call into real implementation
-            result = get_backend_provider(emphemeral=True)._get_payload(exam, context)  # pylint: disable=protected-access
+            result = get_backend_provider(emphemeral=True)._get_payload(exam, context)
 
             # assert that we use the default that is defined in system configuration
             self.assertEqual(result['reviewerNotes'], constants.DEFAULT_SOFTWARE_SECURE_REVIEW_POLICY)
@@ -254,7 +255,7 @@ class SoftwareSecureTests(TestCase):
                 # patch the _get_payload method on the backend provider
                 # so that we can assert that we are called with the review policy
                 # undefined and that we use the system default
-                with patch.object(get_backend_provider(), '_get_payload', assert_get_payload_mock_no_policy):  # pylint: disable=protected-access
+                with patch.object(get_backend_provider(), '_get_payload', assert_get_payload_mock_no_policy):
                     attempt_id = create_exam_attempt(
                         exam_id,
                         self.user.id,
@@ -289,7 +290,7 @@ class SoftwareSecureTests(TestCase):
             """
 
             # call into real implementation
-            result = get_backend_provider(emphemeral=True)._get_payload(exam, context)  # pylint: disable=protected-access
+            result = get_backend_provider(emphemeral=True)._get_payload(exam, context)
             self.assertFalse(isinstance(result['examName'], unicode))
             self.assertTrue(is_ascii(result['examName']))
             self.assertGreater(len(result['examName']), 0)
@@ -306,7 +307,7 @@ class SoftwareSecureTests(TestCase):
             )
 
             # patch the _get_payload method on the backend provider
-            with patch.object(get_backend_provider(), '_get_payload', assert_get_payload_mock_unicode_characters):  # pylint: disable=protected-access
+            with patch.object(get_backend_provider(), '_get_payload', assert_get_payload_mock_unicode_characters):
                 attempt_id = create_exam_attempt(
                     exam_id,
                     self.user.id,
@@ -324,7 +325,7 @@ class SoftwareSecureTests(TestCase):
             )
 
             # patch the _get_payload method on the backend provider
-            with patch.object(get_backend_provider(), '_get_payload', assert_get_payload_mock_unicode_characters):  # pylint: disable=protected-access
+            with patch.object(get_backend_provider(), '_get_payload', assert_get_payload_mock_unicode_characters):
                 attempt_id = create_exam_attempt(
                     exam_id,
                     self.user.id,
@@ -473,7 +474,7 @@ class SoftwareSecureTests(TestCase):
         attempt = get_exam_attempt_by_id(attempt_id)
         self.assertIsNotNone(attempt['external_id'])
 
-        test_payload = Template(TEST_REVIEW_PAYLOAD).substitute(
+        test_payload = create_test_review_payload(
             attempt_code=attempt['attempt_code'],
             external_id=attempt['external_id']
         )
@@ -486,10 +487,8 @@ class SoftwareSecureTests(TestCase):
 
         self.assertIsNotNone(review)
         self.assertEqual(review.review_status, review_status)
-        self.assertEqual(
-            review.video_url,
-            'http://www.remoteproctor.com/AdminSite/Account/Reviewer/DirectLink-Generic.aspx?ID=foo'
-        )
+        self.assertFalse(review.video_url)
+
         self.assertIsNotNone(review.raw_data)
         self.assertIsNone(review.reviewed_by)
 
@@ -515,7 +514,7 @@ class SoftwareSecureTests(TestCase):
         """
 
         provider = get_backend_provider()
-        test_payload = Template(TEST_REVIEW_PAYLOAD).substitute(
+        test_payload = create_test_review_payload(
             attempt_code='not-here',
             external_id='also-not-here'
         )
@@ -530,7 +529,7 @@ class SoftwareSecureTests(TestCase):
         """
 
         provider = get_backend_provider()
-        test_payload = Template(TEST_REVIEW_PAYLOAD).substitute(
+        test_payload = create_test_review_payload(
             attempt_code='not-here',
             external_id='also-not-here'
         )
@@ -567,7 +566,7 @@ class SoftwareSecureTests(TestCase):
         attempt = get_exam_attempt_by_id(attempt_id)
         self.assertIsNotNone(attempt['external_id'])
 
-        test_payload = Template(TEST_REVIEW_PAYLOAD).substitute(
+        test_payload = create_test_review_payload(
             attempt_code=attempt['attempt_code'],
             external_id='bogus'
         )
@@ -604,7 +603,7 @@ class SoftwareSecureTests(TestCase):
         attempt = get_exam_attempt_by_id(attempt_id)
         self.assertIsNotNone(attempt['external_id'])
 
-        test_payload = Template(TEST_REVIEW_PAYLOAD).substitute(
+        test_payload = create_test_review_payload(
             attempt_code=attempt['attempt_code'],
             external_id='bogus'
         )
@@ -644,13 +643,13 @@ class SoftwareSecureTests(TestCase):
         attempt = get_exam_attempt_by_id(attempt_id)
         self.assertIsNotNone(attempt['external_id'])
 
-        test_payload = Template(TEST_REVIEW_PAYLOAD).substitute(
+        test_payload = create_test_review_payload(
             attempt_code=attempt['attempt_code'],
             external_id=attempt['external_id']
         )
 
         # now delete the attempt, which puts it into the archive table
-        remove_exam_attempt(attempt_id)
+        remove_exam_attempt(attempt_id, requesting_user=self.user)
 
         # now process the report
         provider.on_review_callback(json.loads(test_payload))
@@ -660,10 +659,8 @@ class SoftwareSecureTests(TestCase):
 
         self.assertIsNotNone(review)
         self.assertEqual(review.review_status, 'Clean')
-        self.assertEqual(
-            review.video_url,
-            'http://www.remoteproctor.com/AdminSite/Account/Reviewer/DirectLink-Generic.aspx?ID=foo'
-        )
+        self.assertFalse(review.video_url)
+
         self.assertIsNotNone(review.raw_data)
 
         # now check the comments that were stored
@@ -700,7 +697,7 @@ class SoftwareSecureTests(TestCase):
         attempt = get_exam_attempt_by_id(attempt_id)
         self.assertIsNotNone(attempt['external_id'])
 
-        test_payload = Template(TEST_REVIEW_PAYLOAD).substitute(
+        test_payload = create_test_review_payload(
             attempt_code=attempt['attempt_code'],
             external_id=attempt['external_id']
         )
@@ -738,7 +735,7 @@ class SoftwareSecureTests(TestCase):
         attempt = get_exam_attempt_by_id(attempt_id)
         self.assertIsNotNone(attempt['external_id'])
 
-        test_payload = Template(TEST_REVIEW_PAYLOAD).substitute(
+        test_payload = create_test_review_payload(
             attempt_code=attempt['attempt_code'],
             external_id=attempt['external_id']
         )
@@ -758,10 +755,8 @@ class SoftwareSecureTests(TestCase):
 
         self.assertIsNotNone(review)
         self.assertEqual(review.review_status, 'Suspicious')
-        self.assertEqual(
-            review.video_url,
-            'http://www.remoteproctor.com/AdminSite/Account/Reviewer/DirectLink-Generic.aspx?ID=foo'
-        )
+        self.assertFalse(review.video_url)
+
         self.assertIsNotNone(review.raw_data)
 
         # make sure history table is no longer empty
@@ -778,7 +773,8 @@ class SoftwareSecureTests(TestCase):
         self.assertEqual(records[0].review_status, 'Clean')
         self.assertEqual(records[1].review_status, 'Suspicious')
 
-    def test_failure_submission(self):
+    @ddt.data(False, True)
+    def test_failure_submission(self, allow_rejects):
         """
         Tests that a submission of a failed test and make sure that we
         don't automatically update the status to failure
@@ -804,7 +800,7 @@ class SoftwareSecureTests(TestCase):
 
         attempt = get_exam_attempt_by_id(attempt_id)
 
-        test_payload = Template(TEST_REVIEW_PAYLOAD).substitute(
+        test_payload = create_test_review_payload(
             attempt_code=attempt['attempt_code'],
             external_id=attempt['external_id']
         )
@@ -824,10 +820,17 @@ class SoftwareSecureTests(TestCase):
         # now simulate a update via Django Admin table which will actually
         # push through the failure into our attempt status (as well as trigger)
         # other workflow
-        provider.on_review_saved(review, allow_status_update_on_fail=True)
+        provider.on_review_saved(review, allow_rejects=allow_rejects)
 
         attempt = get_exam_attempt_by_id(attempt_id)
-        self.assertEqual(attempt['status'], ProctoredExamStudentAttemptStatus.rejected)
+
+        # if we don't allow rejects to be stored in attempt status
+        # then we should expect a 'second_review_required' status
+        expected_status = (
+            ProctoredExamStudentAttemptStatus.rejected if allow_rejects else
+            ProctoredExamStudentAttemptStatus.second_review_required
+        )
+        self.assertEqual(attempt['status'], expected_status)
 
     def test_update_archived_attempt(self):
         """
@@ -855,7 +858,7 @@ class SoftwareSecureTests(TestCase):
         attempt = get_exam_attempt_by_id(attempt_id)
         self.assertIsNotNone(attempt['external_id'])
 
-        test_payload = Template(TEST_REVIEW_PAYLOAD).substitute(
+        test_payload = create_test_review_payload(
             attempt_code=attempt['attempt_code'],
             external_id=attempt['external_id']
         )
@@ -870,14 +873,14 @@ class SoftwareSecureTests(TestCase):
         self.assertEqual(attempt['status'], attempt['status'])
 
         # now delete the attempt, which puts it into the archive table
-        remove_exam_attempt(attempt_id)
+        remove_exam_attempt(attempt_id, requesting_user=self.user)
 
         review = ProctoredExamSoftwareSecureReview.objects.get(attempt_code=attempt['attempt_code'])
 
         # now simulate a update via Django Admin table which will actually
         # push through the failure into our attempt status but
         # as this is an archived attempt, we don't do anything
-        provider.on_review_saved(review, allow_status_update_on_fail=True)
+        provider.on_review_saved(review, allow_rejects=True)
 
         # look at the attempt again, since it moved into Archived state
         # then it should still remain unchanged
@@ -897,7 +900,7 @@ class SoftwareSecureTests(TestCase):
         review = ProctoredExamSoftwareSecureReview()
         review.attempt_code = 'foo'
 
-        self.assertIsNone(provider.on_review_saved(review, allow_status_update_on_fail=True))
+        self.assertIsNone(provider.on_review_saved(review, allow_rejects=True))
 
     def test_split_fullname(self):
         """
