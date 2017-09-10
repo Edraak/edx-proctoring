@@ -88,8 +88,8 @@ test-js:
 	gulp test
 
 test-all: ## run tests on every supported Python/Django combination
-	tox -e quality
 	tox
+	tox -e quality
 
 diff_cover: test
 	diff-cover coverage.xml
