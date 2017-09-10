@@ -2,21 +2,27 @@
 Helpers for the HTTP APIs
 """
 
-import pytz
-import logging
-from datetime import datetime, timedelta
+from __future__ import absolute_import
 
-from django.utils.translation import ugettext as _, ungettext
+from datetime import datetime, timedelta
+import logging
+import pytz
+
+from django.utils.translation import ugettext as _
+
+from opaque_keys.edx.keys import CourseKey
+from opaque_keys import InvalidKeyError
+
 from rest_framework.views import APIView
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
+
+from eventtracking import tracker
 
 from edx_proctoring.models import (
     ProctoredExamStudentAttempt,
     ProctoredExamStudentAttemptHistory,
 )
-from edx_proctoring import constants
-from edx_proctoring.runtime import get_runtime_service
 
 log = logging.getLogger(__name__)
 
@@ -43,7 +49,7 @@ def get_time_remaining_for_attempt(attempt):
     now_utc = datetime.now(pytz.UTC)
 
     if expires_at > now_utc:
-        time_remaining_seconds = (expires_at - now_utc).seconds
+        time_remaining_seconds = (expires_at - now_utc).total_seconds()
     else:
         time_remaining_seconds = 0
 
@@ -61,21 +67,37 @@ def humanized_time(time_in_minutes):
     """
     hours = int(time_in_minutes / 60)
     minutes = time_in_minutes % 60
-    display = ""
 
-    if hours < 0:
-        return "error"
-    elif hours > 0:
-        display += ungettext("{num_of_hours} hour", "{num_of_hours} hours", hours)\
-            .format(num_of_hours=hours)
+    hours_present = False
+    if hours == 0:
+        hours_present = False
+        template = ""
+    elif hours == 1:
+        template = _("{num_of_hours} hour")
+        hours_present = True
+    elif hours >= 2:
+        template = _("{num_of_hours} hours")
+        hours_present = True
+    else:
+        template = "error"
 
-    if display == "" or minutes > 0:
-        if display != '':
-            display += _(" and ")
-        display += ungettext("{num_of_minutes} minute", "{num_of_minutes} minutes", minutes)\
-            .format(num_of_minutes=minutes)
+    if template != "error":
+        if minutes == 0:
+            if not hours_present:
+                template = _("{num_of_minutes} minutes")
+        elif minutes == 1:
+            if hours_present:
+                template += _(" and {num_of_minutes} minute")
+            else:
+                template += _("{num_of_minutes} minute")
+        else:
+            if hours_present:
+                template += _(" and {num_of_minutes} minutes")
+            else:
+                template += _("{num_of_minutes} minutes")
 
-    return display
+    human_time = template.format(num_of_hours=hours, num_of_minutes=minutes)
+    return human_time
 
 
 def locate_attempt_by_attempt_code(attempt_code):
@@ -100,19 +122,6 @@ def locate_attempt_by_attempt_code(attempt_code):
             log.error(err_msg)
 
     return (attempt_obj, is_archived_attempt)
-
-
-def has_client_app_shutdown(attempt):
-    """
-    Returns True if the client app has shut down, False otherwise
-    """
-
-    # we never heard from the client, so it must not have started
-    if not attempt['last_poll_timestamp']:
-        return True
-
-    elapsed_time = (datetime.now(pytz.UTC) - attempt['last_poll_timestamp']).total_seconds()
-    return elapsed_time > constants.SOFTWARE_SECURE_SHUT_DOWN_GRACEPERIOD
 
 
 def emit_event(exam, event_short_name, attempt=None, override_data=None):
@@ -150,7 +159,7 @@ def emit_event(exam, event_short_name, attempt=None, override_data=None):
         # This can be used to determine how far into an attempt a given
         # event occured (e.g. "time to complete exam")
         attempt_event_elapsed_time_secs = (
-            (datetime.now(pytz.UTC) - attempt['started_at']).seconds if attempt['started_at'] else
+            (datetime.now(pytz.UTC) - attempt['started_at']).total_seconds() if attempt['started_at'] else
             None
         )
 
@@ -165,16 +174,42 @@ def emit_event(exam, event_short_name, attempt=None, override_data=None):
             'attempt_event_elapsed_time_secs': attempt_event_elapsed_time_secs
         }
         data.update(attempt_data)
-        name = '.'.join(['edx', 'special-exam', exam_type, 'attempt', event_short_name])
+        name = '.'.join(['edx', 'special_exam', exam_type, 'attempt', event_short_name])
     else:
-        name = '.'.join(['edx', 'special-exam', exam_type, event_short_name])
+        name = '.'.join(['edx', 'special_exam', exam_type, event_short_name])
 
     # allow caller to override event data
     if override_data:
         data.update(override_data)
 
-    service = get_runtime_service('analytics')
-    if service:
-        service.emit_event(name, context, data)
-    else:
-        log.warn('Analytics event service not configured. If this is a production environment, please resolve.')
+    _emit_event(name, context, data)
+
+
+def _emit_event(name, context, data):
+    """
+    Do the actual integration into the event-tracker
+    """
+
+    try:
+        if context:
+            # try to parse out the org_id from the course_id
+            if 'course_id' in context:
+                try:
+                    course_key = CourseKey.from_string(context['course_id'])
+                    context['org_id'] = course_key.org
+                except InvalidKeyError:
+                    # leave org_id blank
+                    pass
+
+            with tracker.get_tracker().context(name, context):
+                tracker.emit(name, data)
+        else:
+            # if None is passed in then we don't construct the 'with' context stack
+            tracker.emit(name, data)
+    except KeyError:
+        # This happens when a default tracker has not been registered by the host application
+        # aka LMS. This is normal when running unit tests in isolation.
+        log.warning(
+            'Analytics tracker not properly configured. '
+            'If this message appears in a production environment, please investigate'
+        )

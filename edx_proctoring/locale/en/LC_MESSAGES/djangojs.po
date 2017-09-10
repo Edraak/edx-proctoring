@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-01-09 13:41+0200\n"
+"POT-Creation-Date: 2017-01-09 18:32-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,15 +17,37 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: edx_proctoring/static/proctoring/js/views/proctored_exam_add_allowance_view.js:125
+#: edx_proctoring/static/proctoring/js/views/proctored_exam_add_allowance_view.js:132
 msgid "Required field"
 msgstr ""
 
+#: edx_proctoring/static/proctoring/js/views/proctored_exam_add_allowance_view.js:171
+msgid "Practice Exam"
+msgstr ""
+
+#: edx_proctoring/static/proctoring/js/views/proctored_exam_add_allowance_view.js:173
+msgid "Proctored Exam"
+msgstr ""
+
+#: edx_proctoring/static/proctoring/js/views/proctored_exam_add_allowance_view.js:181
+msgid "Timed Exam"
+msgstr ""
+
+#: edx_proctoring/static/proctoring/js/views/proctored_exam_add_allowance_view.js:200
+msgid "Additional Time"
+msgstr ""
+
+#: edx_proctoring/static/proctoring/js/views/proctored_exam_add_allowance_view.js:204
+msgid "Value"
+msgstr ""
+
 #: edx_proctoring/static/proctoring/js/views/proctored_exam_allowance_view.js:13
+#: edx_proctoring/static/proctoring/spec/proctored_exam_add_allowance_spec.js:79
 msgid "Additional Time (minutes)"
 msgstr ""
 
 #: edx_proctoring/static/proctoring/js/views/proctored_exam_allowance_view.js:14
+#: edx_proctoring/static/proctoring/spec/proctored_exam_add_allowance_spec.js:80
 msgid "Review Policy Exception"
 msgstr ""
 
@@ -62,19 +84,19 @@ msgid "Timed out"
 msgstr ""
 
 #: edx_proctoring/static/proctoring/js/views/proctored_exam_attempt_view.js:17
-msgid "Submitted"
+msgid "Second Review Required"
 msgstr ""
 
 #: edx_proctoring/static/proctoring/js/views/proctored_exam_attempt_view.js:18
-msgid "Verified"
+msgid "Submitted"
 msgstr ""
 
 #: edx_proctoring/static/proctoring/js/views/proctored_exam_attempt_view.js:19
-msgid "Rejected"
+msgid "Verified"
 msgstr ""
 
 #: edx_proctoring/static/proctoring/js/views/proctored_exam_attempt_view.js:20
-msgid "Not reviewed"
+msgid "Rejected"
 msgstr ""
 
 #: edx_proctoring/static/proctoring/js/views/proctored_exam_attempt_view.js:21
@@ -97,7 +119,7 @@ msgstr ""
 msgid "Are you sure you want to remove this student's exam attempt?"
 msgstr ""
 
-#: edx_proctoring/static/proctoring/js/views/proctored_exam_view.js:133
+#: edx_proctoring/static/proctoring/js/views/proctored_exam_view.js:134
 msgid ""
 "Are you sure you want to leave this page? \n"
 "To pass your proctored exam you must also pass the online proctoring session "

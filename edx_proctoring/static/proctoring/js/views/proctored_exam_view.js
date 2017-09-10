@@ -20,6 +20,7 @@ var edx = edx || {};
             this.secondsLeft = 0;
             /* give an extra 5 seconds where the timer holds at 00:00 before page refreshes */
             this.grace_period_secs = 5;
+            this.poll_interval = 60;
             this.first_time_rendering = true;
 
             // we need to keep a copy here because the model will
@@ -136,15 +137,15 @@ var edx = edx || {};
         updateRemainingTime: function (self) {
             self.timerTick ++;
             self.secondsLeft --;
-            if (self.timerTick % 5 === 0){
+            if (self.timerTick % self.poll_interval === 0) {
                 var url = self.model.url + '/' + self.model.get('attempt_id');
-                $.ajax(url).success(function(data) {
+                var queryString = '?sourceid=in_exam&proctored=' + self.model.get('taking_as_proctored');
+                $.ajax(url + queryString).success(function(data) {
                     if (data.status === 'error') {
                         // The proctoring session is in error state
-                        // refresh the page to
+                        // refresh the page to bring up the new Proctoring state from the backend.
                         clearInterval(self.timerId); // stop the timer once the time finishes.
                         $(window).unbind('beforeunload', self.unloadMessage);
-                        // refresh the page when the timer expired
                         location.reload();
                     }
                     else {
